@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lobster Boil Party — Who's Who</title>
+<style>
+  :root {
+    --bg: #f4f1ec;
+    --panel: #ffffff;
+    --ink: #2a2a2a;
+    --accent: #c1351d;
+    --filled: #1f8a4c;
+    --empty: #b5402d;
+    --line: #e2ddd3;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+  }
+  header {
+    padding: 14px 18px;
+    background: var(--accent);
+    color: #fff;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+  header h1 { font-size: 19px; margin: 0; flex: 1 1 auto; }
+  .counter { font-size: 14px; opacity: .95; white-space: nowrap; }
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
+  button {
+    font: inherit;
+    cursor: pointer;
+    border: 0;
+    border-radius: 8px;
+    padding: 8px 12px;
+    background: #fff;
+    color: var(--ink);
+  }
+  button.primary { background: #111; color: #fff; }
+  button:active { transform: translateY(1px); }
+  .layout { display: flex; gap: 16px; padding: 16px; align-items: flex-start; flex-wrap: wrap; }
+  .photo-wrap { flex: 1 1 540px; min-width: 300px; }
+  .stage {
+    position: relative;
+    display: block;
+    width: 100%;
+    background: #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,.12);
+  }
+  .stage img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
+  .markers { position: absolute; inset: 0; }
+  .markers.hidden { display: none; }
+  .marker {
+    position: absolute;
+    width: 26px; height: 26px;
+    margin: 0; padding: 0;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 2px solid #fff;
+    background: var(--empty);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,.5);
+    touch-action: none;
+  }
+  .marker.filled { background: var(--filled); }
+  .marker.active { outline: 3px solid #ffd400; outline-offset: 1px; z-index: 5; }
+  .setup-hint {
+    background: #fff6d6;
+    border: 1px solid #e8d27a;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    font-size: 13px;
+  }
+  /* Roster */
+  .roster { flex: 1 1 280px; min-width: 240px; background: var(--panel); border-radius: 10px; padding: 8px; box-shadow: 0 2px 10px rgba(0,0,0,.08); }
+  .roster h2 { font-size: 15px; margin: 6px 8px 10px; }
+  .roster ul { list-style: none; margin: 0; padding: 0; }
+  .roster li {
+    display: flex; gap: 10px; align-items: baseline;
+    padding: 7px 8px; border-bottom: 1px solid var(--line); cursor: pointer; border-radius: 6px;
+  }
+  .roster li:hover { background: #faf7f1; }
+  .roster li.active { background: #fff3c4; }
+  .roster .num { font-weight: 700; min-width: 26px; color: var(--accent); }
+  .roster .who { flex: 1; }
+  .roster .who .nm { font-weight: 600; }
+  .roster .who .em { font-size: 12px; color: #777; }
+  .roster li.blank .who .nm { color: #b5402d; font-weight: 600; font-style: italic; }
+  /* Modal */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
+  .overlay.open { display: flex; }
+  .modal { background: #fff; border-radius: 12px; padding: 18px; width: 100%; max-width: 360px; box-shadow: 0 10px 40px rgba(0,0,0,.3); }
+  .modal h3 { margin: 0 0 12px; font-size: 17px; }
+  .modal label { display: block; font-size: 12px; color: #666; margin: 10px 0 4px; }
+  .modal input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font: inherit; }
+  .modal .row { display: flex; gap: 8px; margin-top: 16px; }
+  .modal .row button { flex: 1; }
+  .modal .danger { background: #fbeae7; color: #b5402d; }
+  .status { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); background: #111; color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 13px; opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 60; }
+  .status.show { opacity: .95; }
+
+  /* Print */
+  .print-only { display: none; }
+  @media print {
+    header, .toolbar, .overlay, .status, .setup-hint, .roster .hint { display: none !important; }
+    body { background: #fff; }
+    .layout { display: block; padding: 0; }
+    .photo-wrap { width: 100%; }
+    .markers { display: block !important; }
+    .roster { box-shadow: none; page-break-before: always; }
+    .roster li { break-inside: avoid; }
+    .print-only { display: block; padding: 8px 0 4px; font-size: 18px; font-weight: 700; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Lobster Boil Party — Who's Who</h1>
+  <span class="counter" id="counter">0 of 0 named</span>
+  <div class="toolbar">
+    <button id="toggleNumbers">Hide numbers</button>
+    <button id="printBtn">Print list</button>
+  </div>
+</header>
+
+<div class="layout">
+  <div class="photo-wrap">
+    <div id="setupHint" class="setup-hint" style="display:none">
+      <b>Setup mode.</b> Drag a number to move it. Click an empty spot to add the next person.
+      Open a number and use “Remove” to delete it. Share the link <i>without</i> <code>?setup=1</code> for others.
+    </div>
+    <div class="stage" id="stage">
+      <img src="photo.jpg" alt="Lobster Boil Party group photo" id="photo">
+      <div class="markers" id="markers"></div>
+    </div>
+  </div>
+
+  <div class="roster">
+    <h2>People <span class="hint" style="font-weight:400;color:#888;font-size:12px">— click a row to find them</span></h2>
+    <div class="print-only">Lobster Boil Party — Name & Email list</div>
+    <ul id="rosterList"></ul>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3 id="modalTitle">Person</h3>
+    <label for="nameInput">Name</label>
+    <input id="nameInput" type="text" autocomplete="off" placeholder="e.g. Malcolm Wilson">
+    <label for="emailInput">Email</label>
+    <input id="emailInput" type="email" autocomplete="off" placeholder="name@example.com">
+    <div class="row">
+      <button class="primary" id="saveBtn">Save</button>
+      <button id="cancelBtn">Cancel</button>
+    </div>
+    <div class="row" id="removeRow" style="display:none">
+      <button class="danger" id="removeBtn">Remove this number</button>
+    </div>
+  </div>
+</div>
+
+<div class="status" id="status"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://wgjuflwbkmgirhqoqfgp.supabase.co";
+const SUPABASE_KEY = "sb_publishable_aB4ZVwOyjyYUoROWIqdclQ_Qcozn-A2";
+const TABLE = "lobster_boil_people";
+const SETUP = new URLSearchParams(location.search).has("setup");
+
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let people = [];                 // [{number,name,email,x,y}]
+let editingNumber = null;
+let numbersVisible = true;
+
+const $ = (id) => document.getElementById(id);
+const stage = $("stage"), markersEl = $("markers"), rosterList = $("rosterList");
+
+function toast(msg) {
+  const s = $("status");
+  s.textContent = msg; s.classList.add("show");
+  clearTimeout(toast._t); toast._t = setTimeout(() => s.classList.remove("show"), 1600);
+}
+
+function byNumber(n) { return people.find(p => p.number === n); }
+
+async function load() {
+  const { data, error } = await db.from(TABLE).select("*").order("number");
+  if (error) { toast("Load error: " + error.message); return; }
+  people = data || [];
+  render();
+}
+
+function render() {
+  renderMarkers();
+  renderRoster();
+  const named = people.filter(p => (p.name || "").trim()).length;
+  $("counter").textContent = `${named} of ${people.length} named`;
+}
+
+function renderMarkers() {
+  markersEl.innerHTML = "";
+  for (const p of people) {
+    const b = document.createElement("button");
+    b.className = "marker" + ((p.name || "").trim() ? " filled" : "");
+    b.style.left = p.x + "%";
+    b.style.top = p.y + "%";
+    b.textContent = p.number;
+    b.dataset.number = p.number;
+    b.title = (p.name || "").trim() || ("Person " + p.number);
+    if (SETUP) makeDraggable(b, p);
+    b.addEventListener("click", (e) => {
+      if (b._dragged) { b._dragged = false; return; }
+      e.stopPropagation();
+      openEditor(p.number);
+    });
+    markersEl.appendChild(b);
+  }
+}
+
+function renderRoster() {
+  rosterList.innerHTML = "";
+  for (const p of people) {
+    const li = document.createElement("li");
+    const blank = !(p.name || "").trim();
+    if (blank) li.classList.add("blank");
+    li.dataset.number = p.number;
+    li.innerHTML = `<span class="num">${p.number}</span>
+      <span class="who"><span class="nm">${blank ? "— not yet identified —" : escapeHtml(p.name)}</span>
+      ${p.email ? `<span class="em">${escapeHtml(p.email)}</span>` : ""}</span>`;
+    li.addEventListener("click", () => {
+      highlight(p.number);
+      if (!SETUP || true) openEditor(p.number);
+    });
+    rosterList.appendChild(li);
+  }
+}
+
+function escapeHtml(s) {
+  return (s || "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function highlight(n) {
+  document.querySelectorAll(".marker.active, .roster li.active").forEach(el => el.classList.remove("active"));
+  const m = markersEl.querySelector(`.marker[data-number="${n}"]`);
+  const li = rosterList.querySelector(`li[data-number="${n}"]`);
+  if (m) { m.classList.add("active"); if (!numbersVisible) toggleNumbers(true); m.scrollIntoView({block:"center", behavior:"smooth"}); }
+  if (li) li.classList.add("active");
+}
+
+/* ---- Editor modal ---- */
+function openEditor(n) {
+  editingNumber = n;
+  const p = byNumber(n) || {};
+  $("modalTitle").textContent = "Person " + n;
+  $("nameInput").value = p.name || "";
+  $("emailInput").value = p.email || "";
+  $("removeRow").style.display = SETUP ? "flex" : "none";
+  $("overlay").classList.add("open");
+  highlight(n);
+  setTimeout(() => $("nameInput").focus(), 50);
+}
+function closeEditor() { $("overlay").classList.remove("open"); editingNumber = null; }
+
+async function saveEditor() {
+  if (editingNumber == null) return;
+  const name = $("nameInput").value.trim();
+  const email = $("emailInput").value.trim();
+  const p = byNumber(editingNumber);
+  const row = { number: editingNumber, name, email, x: p ? p.x : 50, y: p ? p.y : 50, updated_at: new Date().toISOString() };
+  if (p) { p.name = name; p.email = email; }
+  render();
+  closeEditor();
+  const { error } = await db.from(TABLE).upsert(row);
+  if (error) toast("Save failed: " + error.message); else toast("Saved");
+}
+
+async function removePerson() {
+  if (editingNumber == null) return;
+  const n = editingNumber;
+  people = people.filter(p => p.number !== n);
+  render(); closeEditor();
+  const { error } = await db.from(TABLE).delete().eq("number", n);
+  if (error) toast("Delete failed: " + error.message); else toast("Removed " + n);
+}
+
+/* ---- Setup: drag + add ---- */
+function pctFromEvent(clientX, clientY) {
+  const r = stage.getBoundingClientRect();
+  return {
+    x: Math.min(100, Math.max(0, ((clientX - r.left) / r.width) * 100)),
+    y: Math.min(100, Math.max(0, ((clientY - r.top) / r.height) * 100)),
+  };
+}
+
+function makeDraggable(el, p) {
+  let startX, startY, moved = false;
+  el.addEventListener("pointerdown", (e) => {
+    e.preventDefault(); e.stopPropagation();
+    el.setPointerCapture(e.pointerId);
+    startX = e.clientX; startY = e.clientY; moved = false;
+  });
+  el.addEventListener("pointermove", (e) => {
+    if (!el.hasPointerCapture(e.pointerId)) return;
+    if (Math.abs(e.clientX - startX) + Math.abs(e.clientY - startY) > 3) moved = true;
+    if (!moved) return;
+    const { x, y } = pctFromEvent(e.clientX, e.clientY);
+    p.x = x; p.y = y; el.style.left = x + "%"; el.style.top = y + "%";
+  });
+  el.addEventListener("pointerup", async (e) => {
+    el.releasePointerCapture(e.pointerId);
+    if (moved) {
+      el._dragged = true;
+      await db.from(TABLE).update({ x: p.x, y: p.y }).eq("number", p.number);
+      toast("Moved " + p.number);
+    }
+  });
+}
+
+if (SETUP) {
+  $("setupHint").style.display = "block";
+  stage.addEventListener("click", async (e) => {
+    if (e.target.classList.contains("marker")) return;
+    const { x, y } = pctFromEvent(e.clientX, e.clientY);
+    const nextNum = people.reduce((m, p) => Math.max(m, p.number), 0) + 1;
+    const row = { number: nextNum, name: "", email: "", x, y };
+    people.push(row); render();
+    const { error } = await db.from(TABLE).insert(row);
+    if (error) toast("Add failed: " + error.message); else { toast("Added " + nextNum); openEditor(nextNum); }
+  });
+}
+
+/* ---- Toggle numbers ---- */
+function toggleNumbers(force) {
+  numbersVisible = (typeof force === "boolean") ? force : !numbersVisible;
+  markersEl.classList.toggle("hidden", !numbersVisible);
+  $("toggleNumbers").textContent = numbersVisible ? "Hide numbers" : "Show numbers";
+}
+
+/* ---- Wire up ---- */
+$("toggleNumbers").addEventListener("click", () => toggleNumbers());
+$("printBtn").addEventListener("click", () => window.print());
+$("saveBtn").addEventListener("click", saveEditor);
+$("cancelBtn").addEventListener("click", closeEditor);
+$("removeBtn").addEventListener("click", removePerson);
+$("overlay").addEventListener("click", (e) => { if (e.target === $("overlay")) closeEditor(); });
+$("emailInput").addEventListener("keydown", (e) => { if (e.key === "Enter") saveEditor(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeEditor(); });
+
+/* ---- Realtime ---- */
+db.channel("lobster_boil_changes")
+  .on("postgres_changes", { event: "*", schema: "public", table: TABLE }, (payload) => {
+    if (editingNumber != null) return; // don't clobber an open edit
+    const { eventType, new: row, old } = payload;
+    if (eventType === "DELETE") people = people.filter(p => p.number !== old.number);
+    else {
+      const i = people.findIndex(p => p.number === row.number);
+      if (i >= 0) people[i] = row; else people.push(row);
+      people.sort((a, b) => a.number - b.number);
+    }
+    render();
+  })
+  .subscribe();
+
+load();
+</script>
+</body>
+</html>
