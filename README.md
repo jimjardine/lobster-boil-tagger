@@ -5,7 +5,32 @@ marker on someone's head, type their name + email, and it saves to a shared data
 anyone with the link can help fill in names. Includes a printable list at the end.
 
 This repo is the **Lobster Boil Party** photo. To tag a *different* photo, make a copy of
-this whole setup (see "Making a new one" below).
+this whole setup.
+
+---
+
+## ⭐ Future me: start here (the easy way)
+
+You don't need to remember any of the technical stuff below. Just do this:
+
+1. **Save your new group photo somewhere on your Mac** (e.g. drag it into a folder). Note
+   where it is.
+2. **Open Claude Code** (the same tool that built this) in Terminal.
+3. **Copy–paste this prompt to Claude**, then change the two bits in CAPS:
+
+   > Set up a new photo name-tagger, just like my existing `lobster-boil-tagger`
+   > project at `/Users/jimjardine/bluelightgin/lobster-boil-tagger/`. The new photo is
+   > at **PATH-TO-MY-NEW-PHOTO** and I want to call this event **EVENT-NAME** (e.g.
+   > "Christmas Party 2026"). Please: copy the setup into a new folder, add a new table in
+   > my existing `lobster-boil-tagger` Supabase project (NOT the distillery one), point the
+   > new page at that table, pre-place numbered markers on everyone in the photo, deploy it
+   > to a new GitHub Pages site, and give me the shareable link. Read that project's
+   > README.md first for how it all fits together.
+
+4. **Claude does the rest** and hands you a link to share. Open the link with `?setup=1` on
+   the end to nudge any markers that are off, then share the plain link with everyone.
+
+That's it. Everything below is just the technical detail in case you (or Claude) need it.
 
 ---
 
@@ -42,9 +67,10 @@ allows reading/adding/editing rows in this one table.
 
 ---
 
-## Making a new one (for a different photo)
+## Making a new one manually (the technical way)
 
-Each photo = a copy of the folder + its own table. Steps:
+You normally won't need this — the prompt at the top gets Claude to do it all. This is the
+behind-the-scenes detail. Each photo = a copy of the folder + its own table. Steps:
 
 1. **Copy the folder** to a new name, e.g. `christmas-party-tagger/`, and drop the new
    photo in as `photo.jpg`. If it's a big photo, shrink it to ~2000px wide first:
