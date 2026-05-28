@@ -76,6 +76,7 @@
   }
   .marker.filled { background: var(--filled); }
   .marker.active { outline: 3px solid #ffd400; outline-offset: 1px; z-index: 5; }
+  @media (pointer: coarse) { .marker { width: 36px; height: 36px; font-size: 14px; } }
   .setup-hint {
     background: #fff6d6;
     border: 1px solid #e8d27a;
@@ -223,12 +224,11 @@ function renderMarkers() {
     b.textContent = p.number;
     b.dataset.number = p.number;
     b.title = (p.name || "").trim() || ("Person " + p.number);
-    if (SETUP) makeDraggable(b, p);
-    b.addEventListener("click", (e) => {
-      if (b._dragged) { b._dragged = false; return; }
-      e.stopPropagation();
-      openEditor(p.number);
-    });
+    if (SETUP) {
+      makeDraggable(b, p);
+    } else {
+      b.addEventListener("click", (e) => { e.stopPropagation(); openEditor(p.number); });
+    }
     markersEl.appendChild(b);
   }
 }
@@ -317,7 +317,7 @@ function makeDraggable(el, p) {
   });
   el.addEventListener("pointermove", (e) => {
     if (!el.hasPointerCapture(e.pointerId)) return;
-    if (Math.abs(e.clientX - startX) + Math.abs(e.clientY - startY) > 3) moved = true;
+    if (Math.abs(e.clientX - startX) + Math.abs(e.clientY - startY) > 6) moved = true;
     if (!moved) return;
     const { x, y } = pctFromEvent(e.clientX, e.clientY);
     p.x = x; p.y = y; el.style.left = x + "%"; el.style.top = y + "%";
@@ -325,9 +325,10 @@ function makeDraggable(el, p) {
   el.addEventListener("pointerup", async (e) => {
     el.releasePointerCapture(e.pointerId);
     if (moved) {
-      el._dragged = true;
       await db.from(TABLE).update({ x: p.x, y: p.y }).eq("number", p.number);
       toast("Moved " + p.number);
+    } else {
+      openEditor(p.number);   // a tap (no real drag) opens the name box
     }
   });
 }
