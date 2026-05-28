@@ -60,14 +60,14 @@
   .markers.hidden { display: none; }
   .marker {
     position: absolute;
-    width: 26px; height: 26px;
+    width: 20px; height: 20px;
     margin: 0; padding: 0;
     transform: translate(-50%, -50%);
     border-radius: 50%;
-    border: 2px solid #fff;
+    border: 1.5px solid #fff;
     background: var(--empty);
     color: #fff;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 700;
     line-height: 1;
     display: flex; align-items: center; justify-content: center;
@@ -76,7 +76,7 @@
   }
   .marker.filled { background: var(--filled); }
   .marker.active { outline: 3px solid #ffd400; outline-offset: 1px; z-index: 5; }
-  @media (pointer: coarse) { .marker { width: 36px; height: 36px; font-size: 14px; } }
+  @media (pointer: coarse) { .marker { width: 28px; height: 28px; font-size: 12px; } }
   .setup-hint {
     background: #fff6d6;
     border: 1px solid #e8d27a;
